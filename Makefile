@@ -1,6 +1,6 @@
 .PHONY: build
 build: 
-	go build -o bin/app -v ./cmd/app
+	go build -o bin/app -v ./cmd/segments-users-service
 
 .PHONY: test
 test: 

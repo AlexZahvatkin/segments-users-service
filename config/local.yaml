@@ -1,8 +1,14 @@
 env: "local" # local, dev, prod
-storage_path: "./storage/storage.db"
+
 http_server: 
   address: "localhost:8080"
   timeout: 4s
   idle_timeout: 60s
-  user: "myuser"
-  password: "mypass"
+
+database: 
+  host: "localhost"
+  port: "5432"
+  user: "postgres"
+  password: ""
+  name: "segments"
+  sslmode: "disable"
