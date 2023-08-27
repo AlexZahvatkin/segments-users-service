@@ -7,7 +7,7 @@ test:
 	go test -v -timeout 30s ./...
 
 .PHONY: run 
-run: 
+run: build
 	./bin/app
 
 .DEFAULT_GOAL := build
