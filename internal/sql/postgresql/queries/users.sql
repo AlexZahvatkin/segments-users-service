@@ -1,4 +1,4 @@
--- name: CreateUser :one
+-- name: AddUser :one
 INSERT INTO users(name, created_at, updated_at) 
 VALUES ($1, now(), now())
 RETURNING *;
@@ -7,6 +7,6 @@ RETURNING *;
 DELETE FROM users 
 WHERE id = $1;
 
--- name: GetAllUsers :many
+-- name: GetAllUsersId :many
 SELECT id
 FROM users;

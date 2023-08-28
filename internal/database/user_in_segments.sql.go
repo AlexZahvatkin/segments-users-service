@@ -10,11 +10,11 @@ import (
 )
 
 const addUserIntoSegment = `-- name: AddUserIntoSegment :one
-INSERT INTO users_in_segments (user_id, segment_id, created_at, updated_at, expire_at) 
-VALUES ($1, (SELECT id FROM segments WHERE $2 = name), now(), now(), null)
-ON CONFLICT (user_id, segment_id) DO UPDATE
+INSERT INTO users_in_segments (user_id, segment_name, created_at, updated_at, expire_at) 
+VALUES ($1, $2, now(), now(), null)
+ON CONFLICT (user_id, segment_name) DO UPDATE
 	SET updated_at = now(), expire_at = null
-RETURNING user_id, segment_id, created_at, updated_at, expire_at
+RETURNING user_id, segment_name, created_at, updated_at, expire_at
 `
 
 type AddUserIntoSegmentParams struct {
@@ -27,7 +27,7 @@ func (q *Queries) AddUserIntoSegment(ctx context.Context, arg AddUserIntoSegment
 	var i UsersInSegment
 	err := row.Scan(
 		&i.UserID,
-		&i.SegmentID,
+		&i.SegmentName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ExpireAt,
@@ -36,11 +36,11 @@ func (q *Queries) AddUserIntoSegment(ctx context.Context, arg AddUserIntoSegment
 }
 
 const addUserIntoSegmentWithTTLInHours = `-- name: AddUserIntoSegmentWithTTLInHours :one
-INSERT INTO users_in_segments (user_id, segment_id, created_at, updated_at, expire_at) 
-VALUES ($1, (SELECT id FROM segments WHERE $2 = name), now(), now(), now() + make_interval(hours => $3))
-ON CONFLICT (user_id, segment_id) DO UPDATE
+INSERT INTO users_in_segments (user_id, segment_name, created_at, updated_at, expire_at) 
+VALUES ($1, $2, now(), now(), now() + make_interval(hours => $3))
+ON CONFLICT (user_id, segment_name) DO UPDATE
 	SET updated_at = now(), expire_at = now() + make_interval(hours => $3)
-RETURNING user_id, segment_id, created_at, updated_at, expire_at
+RETURNING user_id, segment_name, created_at, updated_at, expire_at
 `
 
 type AddUserIntoSegmentWithTTLInHoursParams struct {
@@ -54,7 +54,7 @@ func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg AddU
 	var i UsersInSegment
 	err := row.Scan(
 		&i.UserID,
-		&i.SegmentID,
+		&i.SegmentName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ExpireAt,
@@ -63,9 +63,8 @@ func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg AddU
 }
 
 const getSegmentsByUserId = `-- name: GetSegmentsByUserId :many
-SELECT segment_id, name 
+SELECT segment_name 
 FROM users_in_segments
-INNER JOIN segments ON segment_id = segments.id
 WHERE user_id = $1 AND 
 CASE WHEN expire_at IS NOT NULL
 THEN expire_at > now()
@@ -73,24 +72,19 @@ ELSE TRUE
 END
 `
 
-type GetSegmentsByUserIdRow struct {
-	SegmentID int64
-	Name      string
-}
-
-func (q *Queries) GetSegmentsByUserId(ctx context.Context, userID int64) ([]GetSegmentsByUserIdRow, error) {
+func (q *Queries) GetSegmentsByUserId(ctx context.Context, userID int64) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, getSegmentsByUserId, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetSegmentsByUserIdRow
+	var items []string
 	for rows.Next() {
-		var i GetSegmentsByUserIdRow
-		if err := rows.Scan(&i.SegmentID, &i.Name); err != nil {
+		var segment_name string
+		if err := rows.Scan(&segment_name); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, segment_name)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -105,7 +99,7 @@ const removeUserFromSegment = `-- name: RemoveUserFromSegment :exec
 DELETE 
 FROM users_in_segments
 WHERE user_id = $1 AND 
-segment_id = (SELECT id FROM segments WHERE name = $2)
+segment_name = $2
 `
 
 type RemoveUserFromSegmentParams struct {

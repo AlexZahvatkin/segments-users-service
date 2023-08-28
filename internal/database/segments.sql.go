@@ -7,22 +7,28 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
-const createSegment = `-- name: CreateSegment :one
-INSERT INTO segments (name, created_at, updated_at) 
-VALUES ($1, now(), now())
-RETURNING id, name, created_at, updated_at
+const addSegment = `-- name: AddSegment :one
+INSERT INTO segments (name, created_at, updated_at, description) 
+VALUES ($1, now(), now(), $2)
+RETURNING name, created_at, updated_at, description
 `
 
-func (q *Queries) CreateSegment(ctx context.Context, name string) (Segment, error) {
-	row := q.db.QueryRowContext(ctx, createSegment, name)
+type AddSegmentParams struct {
+	Name        string
+	Description sql.NullString
+}
+
+func (q *Queries) AddSegment(ctx context.Context, arg AddSegmentParams) (Segment, error) {
+	row := q.db.QueryRowContext(ctx, addSegment, arg.Name, arg.Description)
 	var i Segment
 	err := row.Scan(
-		&i.ID,
 		&i.Name,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Description,
 	)
 	return i, err
 }

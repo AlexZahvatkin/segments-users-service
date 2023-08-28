@@ -11,7 +11,7 @@ import (
 )
 
 const getSegmentsHistoryByUserId = `-- name: GetSegmentsHistoryByUserId :many
-SELECT user_id, segment_id, segment_name, action_type, action_date 
+SELECT user_id, segment_name, expire_at, action_type, action_date 
 FROM users_in_segments_history
 WHERE user_id = $1 AND action_date > $2 AND action_date < $3
 `
@@ -33,8 +33,8 @@ func (q *Queries) GetSegmentsHistoryByUserId(ctx context.Context, arg GetSegment
 		var i UsersInSegmentsHistory
 		if err := rows.Scan(
 			&i.UserID,
-			&i.SegmentID,
 			&i.SegmentName,
+			&i.ExpireAt,
 			&i.ActionType,
 			&i.ActionDate,
 		); err != nil {

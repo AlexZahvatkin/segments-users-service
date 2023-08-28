@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :one
+const addUser = `-- name: AddUser :one
 INSERT INTO users(name, created_at, updated_at) 
 VALUES ($1, now(), now())
 RETURNING id, created_at, updated_at, name
 `
 
-func (q *Queries) CreateUser(ctx context.Context, name string) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, name)
+func (q *Queries) AddUser(ctx context.Context, name string) (User, error) {
+	row := q.db.QueryRowContext(ctx, addUser, name)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -37,13 +37,13 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
-const getAllUsers = `-- name: GetAllUsers :many
+const getAllUsersId = `-- name: GetAllUsersId :many
 SELECT id
 FROM users
 `
 
-func (q *Queries) GetAllUsers(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, getAllUsers)
+func (q *Queries) GetAllUsersId(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUsersId)
 	if err != nil {
 		return nil, err
 	}
