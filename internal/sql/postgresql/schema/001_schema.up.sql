@@ -2,7 +2,7 @@ CREATE TABLE users (
 	id BIGSERIAL PRIMARY KEY,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL,
-	name TEXT);
+	name TEXT NOT NULL);
 	
 CREATE TABLE segments( 
 	id BIGSERIAL PRIMARY KEY,
@@ -16,7 +16,7 @@ CREATE TABLE users_in_segments(
 	segment_id BIGSERIAL NOT NULL REFERENCES segments(id) ON DELETE CASCADE,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL,
-	will_expire_at TIMESTAMP,
+	expire_at TIMESTAMP,
 	PRIMARY KEY (user_id, segment_id)
 );
 	

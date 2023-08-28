@@ -8,6 +8,7 @@ import (
 
 	"github.com/AlexZahvatkin/segments-users-service/config"
 	"github.com/AlexZahvatkin/segments-users-service/internal/database"
+	v1 "github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers/v1"
 	"github.com/AlexZahvatkin/segments-users-service/internal/lib/logger"
 	_ "github.com/lib/pq"
 )
@@ -29,7 +30,8 @@ func Run() {
 	log.Info("Initializing postgres...")
 	queries := initDb(getDbURL(cfg), log)
 
-	_ = queries
+	log.Info("Initializing routers...")
+	v1.InitRouters(queries, log)
 }
 
 func initDb(dbURL string, log *slog.Logger) *database.Queries {

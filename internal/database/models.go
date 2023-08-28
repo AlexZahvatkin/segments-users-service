@@ -20,15 +20,15 @@ type User struct {
 	ID        int64
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Name      sql.NullString
+	Name      string
 }
 
 type UsersInSegment struct {
-	UserID       int64
-	SegmentID    int64
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	WillExpireAt sql.NullTime
+	UserID    int64
+	SegmentID int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	ExpireAt  sql.NullTime
 }
 
 type UsersInSegmentsHistory struct {
