@@ -30,6 +30,6 @@ type AddUserIntoSegmentWithExpireDatetimeParams struct {
 }
 
 type AddSegmentParams struct {
-	Name        string         `json:"name" validate:"required,min=4,max=255"`
-	Description sql.NullString `json:"description" validate:"max=65535"`
+	Name        string
+	Description sql.NullString 
 }
