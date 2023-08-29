@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
@@ -18,13 +17,7 @@ FROM users_in_segments_history
 WHERE user_id = $1 AND action_date > $2 AND action_date < $3
 `
 
-type GetSegmentsHistoryByUserIdParams struct {
-	UserID   int64
-	FromDate time.Time
-	ToDate   time.Time
-}
-
-func (q *Queries) GetSegmentsHistoryByUserId(ctx context.Context, arg GetSegmentsHistoryByUserIdParams) ([]models.UsersInSegmentsHistory, error) {
+func (q *Queries) GetSegmentsHistoryByUserId(ctx context.Context, arg models.GetSegmentsHistoryByUserIdParams) ([]models.UsersInSegmentsHistory, error) {
 	rows, err := q.db.QueryContext(ctx, getSegmentsHistoryByUserId, arg.UserID, arg.FromDate, arg.ToDate)
 	if err != nil {
 		return nil, err

@@ -34,3 +34,9 @@ type UsersInSegmentsHistory struct {
 	ActionType  string
 	ActionDate  time.Time
 }
+
+type AddUserIntoSegmentWithTTLInHoursParams struct {
+	UserID        int64
+	SegmentName   string
+	NumberOfHours int32
+}

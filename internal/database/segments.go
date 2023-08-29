@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
@@ -18,12 +17,7 @@ VALUES ($1, now(), now(), $2)
 RETURNING name, created_at, updated_at, description
 `
 
-type AddSegmentParams struct {
-	Name        string
-	Description sql.NullString
-}
-
-func (q *Queries) AddSegment(ctx context.Context, arg AddSegmentParams) (models.Segment, error) {
+func (q *Queries) AddSegment(ctx context.Context, arg models.AddSegmentParams) (models.Segment, error) {
 	row := q.db.QueryRowContext(ctx, addSegment, arg.Name, arg.Description)
 	var i models.Segment
 	err := row.Scan(

@@ -7,8 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
@@ -21,12 +19,7 @@ ON CONFLICT (user_id, segment_name) DO UPDATE
 RETURNING user_id, segment_name, created_at, updated_at, expire_at
 `
 
-type AddUserIntoSegmentParams struct {
-	UserID      int64
-	SegmentName string
-}
-
-func (q *Queries) AddUserIntoSegment(ctx context.Context, arg AddUserIntoSegmentParams) (models.UsersInSegment, error) {
+func (q *Queries) AddUserIntoSegment(ctx context.Context, arg models.AddUserIntoSegmentParams) (models.UsersInSegment, error) {
 	row := q.db.QueryRowContext(ctx, addUserIntoSegment, arg.UserID, arg.SegmentName)
 	var i models.UsersInSegment
 	err := row.Scan(
@@ -45,15 +38,7 @@ VALUES ($1, $2, $3, $4, $5)
 RETURNING user_id, segment_name, created_at, updated_at, expire_at
 `
 
-type AddUserIntoSegmentWithExpireDatetimeParams struct {
-	UserID      int64
-	SegmentName string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	ExpireAt    sql.NullTime
-}
-
-func (q *Queries) AddUserIntoSegmentWithExpireDatetime(ctx context.Context, arg AddUserIntoSegmentWithExpireDatetimeParams) (models.UsersInSegment, error) {
+func (q *Queries) AddUserIntoSegmentWithExpireDatetime(ctx context.Context, arg models.AddUserIntoSegmentWithExpireDatetimeParams) (models.UsersInSegment, error) {
 	row := q.db.QueryRowContext(ctx, addUserIntoSegmentWithExpireDatetime,
 		arg.UserID,
 		arg.SegmentName,
@@ -80,13 +65,7 @@ ON CONFLICT (user_id, segment_name) DO UPDATE
 RETURNING user_id, segment_name, created_at, updated_at, expire_at
 `
 
-type AddUserIntoSegmentWithTTLInHoursParams struct {
-	UserID        int64
-	SegmentName   string
-	NumberOfHours int32
-}
-
-func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg AddUserIntoSegmentWithTTLInHoursParams) (models.UsersInSegment, error) {
+func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg models.AddUserIntoSegmentWithTTLInHoursParams) (models.UsersInSegment, error) {
 	row := q.db.QueryRowContext(ctx, addUserIntoSegmentWithTTLInHours, arg.UserID, arg.SegmentName, arg.NumberOfHours)
 	var i models.UsersInSegment
 	err := row.Scan(
@@ -139,12 +118,7 @@ WHERE user_id = $1 AND
 segment_name = $2
 `
 
-type RemoveUserFromSegmentParams struct {
-	UserID      int64
-	SegmentName string
-}
-
-func (q *Queries) RemoveUserFromSegment(ctx context.Context, arg RemoveUserFromSegmentParams) error {
+func (q *Queries) RemoveUserFromSegment(ctx context.Context, arg models.RemoveUserFromSegmentParams) error {
 	_, err := q.db.ExecContext(ctx, removeUserFromSegment, arg.UserID, arg.SegmentName)
 	return err
 }

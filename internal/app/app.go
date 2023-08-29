@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/AlexZahvatkin/segments-users-service/config"
@@ -31,10 +32,22 @@ func Run() {
 	queries := initDb(getDbURL(cfg), log)
 	log.Debug(getDbURL(cfg))
 
-	log.Info("query result")
-
 	log.Info("Initializing routers...")
-	v1.InitRouters(queries, log)
+	router := v1.InitRouters(queries, log)
+
+	srv := &http.Server{
+		Addr: cfg.Address,
+		Handler: router,
+		ReadTimeout: cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout: cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {  
+		log.Error("failed to start server")
+	}
+
+	log.Error("server stopped")
 }
 
 func initDb(dbURL string, log *slog.Logger) *database.Queries {
