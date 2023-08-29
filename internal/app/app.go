@@ -29,6 +29,9 @@ func Run() {
  
 	log.Info("Initializing postgres...")
 	queries := initDb(getDbURL(cfg), log)
+	log.Debug(getDbURL(cfg))
+
+	log.Info("query result")
 
 	log.Info("Initializing routers...")
 	v1.InitRouters(queries, log)
@@ -45,7 +48,7 @@ func initDb(dbURL string, log *slog.Logger) *database.Queries {
 }
 
 func getDbURL(cfg *config.Config) string{
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.SSLMode)
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.SSLMode)
 }
 
 func setupLogger(env string) *slog.Logger {

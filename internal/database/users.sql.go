@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
 
 const addUser = `-- name: AddUser :one
@@ -15,9 +17,9 @@ VALUES ($1, now(), now())
 RETURNING id, created_at, updated_at, name
 `
 
-func (q *Queries) AddUser(ctx context.Context, name string) (User, error) {
+func (q *Queries) AddUser(ctx context.Context, name string) (models.User, error) {
 	row := q.db.QueryRowContext(ctx, addUser, name)
-	var i User
+	var i models.User
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
@@ -63,4 +65,22 @@ func (q *Queries) GetAllUsersId(ctx context.Context) ([]int64, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT id, created_at, updated_at, name
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserById(ctx context.Context, id int64) (models.User, error) {
+	row := q.db.QueryRowContext(ctx, getUserById, id)
+	var i models.User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+	)
+	return i, err
 }

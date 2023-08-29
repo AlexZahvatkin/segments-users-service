@@ -7,6 +7,10 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	"time"
+
+	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
 
 const addUserIntoSegment = `-- name: AddUserIntoSegment :one
@@ -22,9 +26,42 @@ type AddUserIntoSegmentParams struct {
 	SegmentName string
 }
 
-func (q *Queries) AddUserIntoSegment(ctx context.Context, arg AddUserIntoSegmentParams) (UsersInSegment, error) {
+func (q *Queries) AddUserIntoSegment(ctx context.Context, arg AddUserIntoSegmentParams) (models.UsersInSegment, error) {
 	row := q.db.QueryRowContext(ctx, addUserIntoSegment, arg.UserID, arg.SegmentName)
-	var i UsersInSegment
+	var i models.UsersInSegment
+	err := row.Scan(
+		&i.UserID,
+		&i.SegmentName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ExpireAt,
+	)
+	return i, err
+}
+
+const addUserIntoSegmentWithExpireDatetime = `-- name: AddUserIntoSegmentWithExpireDatetime :one
+INSERT INTO users_in_segments(user_id, segment_name, created_at, updated_at, expire_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING user_id, segment_name, created_at, updated_at, expire_at
+`
+
+type AddUserIntoSegmentWithExpireDatetimeParams struct {
+	UserID      int64
+	SegmentName string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	ExpireAt    sql.NullTime
+}
+
+func (q *Queries) AddUserIntoSegmentWithExpireDatetime(ctx context.Context, arg AddUserIntoSegmentWithExpireDatetimeParams) (models.UsersInSegment, error) {
+	row := q.db.QueryRowContext(ctx, addUserIntoSegmentWithExpireDatetime,
+		arg.UserID,
+		arg.SegmentName,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.ExpireAt,
+	)
+	var i models.UsersInSegment
 	err := row.Scan(
 		&i.UserID,
 		&i.SegmentName,
@@ -49,9 +86,9 @@ type AddUserIntoSegmentWithTTLInHoursParams struct {
 	NumberOfHours int32
 }
 
-func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg AddUserIntoSegmentWithTTLInHoursParams) (UsersInSegment, error) {
+func (q *Queries) AddUserIntoSegmentWithTTLInHours(ctx context.Context, arg AddUserIntoSegmentWithTTLInHoursParams) (models.UsersInSegment, error) {
 	row := q.db.QueryRowContext(ctx, addUserIntoSegmentWithTTLInHours, arg.UserID, arg.SegmentName, arg.NumberOfHours)
-	var i UsersInSegment
+	var i models.UsersInSegment
 	err := row.Scan(
 		&i.UserID,
 		&i.SegmentName,

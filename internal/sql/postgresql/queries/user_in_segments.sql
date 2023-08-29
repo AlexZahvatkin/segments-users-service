@@ -26,3 +26,8 @@ DELETE
 FROM users_in_segments
 WHERE user_id = @user_id AND 
 segment_name = @segment_name;
+
+-- name: AddUserIntoSegmentWithExpireDatetime :one 
+INSERT INTO users_in_segments(user_id, segment_name, created_at, updated_at, expire_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;

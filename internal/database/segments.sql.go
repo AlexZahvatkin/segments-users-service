@@ -8,6 +8,8 @@ package database
 import (
 	"context"
 	"database/sql"
+
+	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
 
 const addSegment = `-- name: AddSegment :one
@@ -21,9 +23,9 @@ type AddSegmentParams struct {
 	Description sql.NullString
 }
 
-func (q *Queries) AddSegment(ctx context.Context, arg AddSegmentParams) (Segment, error) {
+func (q *Queries) AddSegment(ctx context.Context, arg AddSegmentParams) (models.Segment, error) {
 	row := q.db.QueryRowContext(ctx, addSegment, arg.Name, arg.Description)
-	var i Segment
+	var i models.Segment
 	err := row.Scan(
 		&i.Name,
 		&i.CreatedAt,
@@ -41,4 +43,22 @@ WHERE name = $1
 func (q *Queries) DeleteSegment(ctx context.Context, name string) error {
 	_, err := q.db.ExecContext(ctx, deleteSegment, name)
 	return err
+}
+
+const getSegmentByName = `-- name: GetSegmentByName :one
+SELECT name, created_at, updated_at, description
+FROM segments 
+WHERE name = $1
+`
+
+func (q *Queries) GetSegmentByName(ctx context.Context, name string) (models.Segment, error) {
+	row := q.db.QueryRowContext(ctx, getSegmentByName, name)
+	var i models.Segment
+	err := row.Scan(
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Description,
+	)
+	return i, err
 }

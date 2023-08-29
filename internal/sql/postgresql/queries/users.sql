@@ -10,3 +10,8 @@ WHERE id = $1;
 -- name: GetAllUsersId :many
 SELECT id
 FROM users;
+
+-- name: GetUserById :one 
+SELECT *
+FROM users
+WHERE id = $1;

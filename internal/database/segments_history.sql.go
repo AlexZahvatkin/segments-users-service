@@ -8,6 +8,8 @@ package database
 import (
 	"context"
 	"time"
+
+	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 )
 
 const getSegmentsHistoryByUserId = `-- name: GetSegmentsHistoryByUserId :many
@@ -22,15 +24,15 @@ type GetSegmentsHistoryByUserIdParams struct {
 	ToDate   time.Time
 }
 
-func (q *Queries) GetSegmentsHistoryByUserId(ctx context.Context, arg GetSegmentsHistoryByUserIdParams) ([]UsersInSegmentsHistory, error) {
+func (q *Queries) GetSegmentsHistoryByUserId(ctx context.Context, arg GetSegmentsHistoryByUserIdParams) ([]models.UsersInSegmentsHistory, error) {
 	rows, err := q.db.QueryContext(ctx, getSegmentsHistoryByUserId, arg.UserID, arg.FromDate, arg.ToDate)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UsersInSegmentsHistory
+	var items []models.UsersInSegmentsHistory
 	for rows.Next() {
-		var i UsersInSegmentsHistory
+		var i models.UsersInSegmentsHistory
 		if err := rows.Scan(
 			&i.UserID,
 			&i.SegmentName,

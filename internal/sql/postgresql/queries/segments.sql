@@ -6,3 +6,8 @@ RETURNING *;
 -- name: DeleteSegment :exec
 DELETE FROM segments 
 WHERE name = $1;
+
+-- name: GetSegmentByName :one
+SELECT *
+FROM segments 
+WHERE name = $1;
