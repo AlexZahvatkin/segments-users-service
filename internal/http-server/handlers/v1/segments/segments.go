@@ -3,8 +3,6 @@ package segments
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -52,11 +50,8 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body)
-		req := request{}
-		err := decoder.Decode(&req)
+		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
 			return
 		}
 
@@ -105,10 +100,6 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 }
 
 func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.HandlerFunc {
-	type request struct {
-		Name string `json:"name" validate:"required"`
-	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteSegmentHandler"
 
@@ -117,29 +108,22 @@ func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body) 
-		req := request {}
-		err := decoder.Decode(&req)
-		if err!= nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
-			return
+		req := r.URL.Query().Get("name")
+		if req == "" {
+			httpserver.RespondWithError(w, http.StatusBadRequest, "Name is required", log)
+            return
 		}
 
-		log.Info("request body decoded", slog.Any("request", req))
+		log.Info("Get requested segment name", slog.String("name", req))
 
-		if err := validator.New().Struct(req); err!= nil {
-			httpserver.RespondWithValidateError(w, log, err)
-			return
-		}
+		req = usecases_segments.FormatSegmnetName(req)
 
-		req.Name = usecases_segments.FormatSegmnetName(req.Name)
-
-		if _, err := segmentDeleter.GetSegmentByName(r.Context(), req.Name); err != nil {
+		if _, err := segmentDeleter.GetSegmentByName(r.Context(), req); err != nil {
 			httpserver.RespondWithError(w, http.StatusBadRequest, "Invalid segment name", log)
 			return
 		}
 
-		if err = segmentDeleter.DeleteSegment(r.Context(), req.Name); err != nil {
+		if err := segmentDeleter.DeleteSegment(r.Context(), req); err != nil {
 			log.Error(err.Error())
 
 			httpserver.RespondWithError(w, http.StatusInternalServerError, "Could not delete segment:", log)

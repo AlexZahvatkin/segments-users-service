@@ -3,17 +3,14 @@ package users_in_segments
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
-	"errors"
 
 	httpserver "github.com/AlexZahvatkin/segments-users-service/internal/http-server"
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
-	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 )
@@ -82,11 +79,8 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body)
-		req := request{}
-		err := decoder.Decode(&req)
+		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
 			return
 		}
 
@@ -97,7 +91,7 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 			return
 		}
 
-		userId, err := getUserIdFromParams(w, r, log)
+		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
             return
         }
@@ -166,15 +160,12 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body)
-		req := request{}
-		err := decoder.Decode(&req)
+		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
 			return
 		}
 
-		userId, err := getUserIdFromParams(w, r, log)
+		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
             return
         }
@@ -219,7 +210,7 @@ func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) h
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		userId, err := getUserIdFromParams(w, r, log)
+		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
             return
         }
@@ -258,17 +249,17 @@ func GetSegmentsHistoryByUser(log *slog.Logger, getter SegmentHistoryGetter) htt
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		userId, err := getUserIdFromParams(w, r, log)
+		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
             return
         }
 
-		from, err := getTimeFromParams(w, r, log, "from")
+		from, err := httpserver.GetTimeFromParams(w, r, log, "from", timeFormat)
 		if err!= nil {
 			return
 		}
 
-		to, err := getTimeFromParams(w, r, log, "to")
+		to, err := httpserver.GetTimeFromParams(w, r, log, "to", timeFormat)
         if err!= nil {
             return
         }
@@ -341,33 +332,4 @@ func checkIfSegmentExists(getter SegmentGetter, log *slog.Logger, segment_name s
 		return false
 	}
 	return true
-}
-
-func getUserIdFromParams(w http.ResponseWriter, r *http.Request, log *slog.Logger) (int64, error) {
-	s := chi.URLParam(r, "userId")
-	log.Debug("Param is " + s)
-	if s == "" {
-		httpserver.RespondWithError(w, http.StatusBadRequest, "You must provide userId", log)
-		return -1, errors.New("No parameter provided")
-	}
-	userId, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("User id must be a number: %v", err), log)
-		return -1, err
-	}
-	return userId, nil
-}
-
-func getTimeFromParams(w http.ResponseWriter, r *http.Request, log *slog.Logger, paramName string) (time.Time, error) {
-	s := r.URL.Query().Get(paramName)
-	if s == "" {
-		httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("You must provide %s", paramName), log)
-		return time.Time{}, errors.New("No parameter provided")
-	}
-	t, err := time.Parse(timeFormat, s)
-	if err != nil {		
-		httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Wrong datetime format: %v", err), log)
-		return time.Time{}, err
-	}
-	return t, nil
 }

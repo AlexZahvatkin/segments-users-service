@@ -2,8 +2,6 @@ package users
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -31,11 +29,8 @@ func AddUserHandler(log *slog.Logger, userAdder UserAdder) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body) 
-		req := request {}
-		err := decoder.Decode(&req)
-		if err!= nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
+		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
+		if err != nil {
 			return
 		}
 
@@ -65,10 +60,6 @@ type UserDeleter interface {
 }
 
 func DeleteUserHandler(log *slog.Logger, userDeleter UserDeleter) http.HandlerFunc {
-	type request struct {
-		ID int64 `json:"id" validate:"required"`
-	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteUserHandler"
 
@@ -77,27 +68,17 @@ func DeleteUserHandler(log *slog.Logger, userDeleter UserDeleter) http.HandlerFu
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		decoder := json.NewDecoder(r.Body) 
-		req := request {}
-		err := decoder.Decode(&req)
+		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
-			httpserver.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
-			return
-		}
+            return
+        }
 
-		log.Info("request body decoded", slog.Any("request", req))
-
-		if err := validator.New().Struct(req); err!= nil {
-			httpserver.RespondWithValidateError(w, log, err)
-			return
-		}
-
-		if _, err := userDeleter.GetUserById(r.Context(), req.ID); err != nil {
+		if _, err := userDeleter.GetUserById(r.Context(), userId); err != nil {
 			httpserver.RespondWithError(w, http.StatusBadRequest, "Invalid user id", log)
 			return
 		}
 		
-		if err = userDeleter.DeleteUser(r.Context(), req.ID); err!= nil {
+		if err = userDeleter.DeleteUser(r.Context(), userId); err!= nil {
 			log.Error(err.Error())
 
 			httpserver.RespondWithError(w, http.StatusInternalServerError, "Could not delete user:", log)

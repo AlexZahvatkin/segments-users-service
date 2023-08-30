@@ -38,7 +38,7 @@ func InitRouters(queries *database.Queries, log *slog.Logger) *chi.Mux {
 	v1Router.Post("/segments/ttl/{userId}", users_in_segments.SegmentsAssignWithTTLInHoursHandler(log, queries))
 	v1Router.Get("/segments/{userId}", users_in_segments.GetSegmentsForUserHandler(log, queries))
 	v1Router.Post("/users", users.AddUserHandler(log, queries))
-	v1Router.Delete("/users", users.DeleteUserHandler(log, queries))
+	v1Router.Delete("/users/{userId}", users.DeleteUserHandler(log, queries))
 	v1Router.Post("/segments", segments.AddSegmentHandler(log, queries))
 	v1Router.Delete("/segments", segments.DeleteSegmentHandler(log, queries))
 
