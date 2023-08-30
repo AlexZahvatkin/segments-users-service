@@ -13,6 +13,15 @@ func init() {
 	}
 }
 
+// @title Segments Users Service
+// @version 1.0
+// @description API Server segments management.
+// @host localhost:8080
+// @BasePath /v1
+// @accept json
+// @produce json
+// @schemes http
+
 func main() {
 	app.Run()
 }

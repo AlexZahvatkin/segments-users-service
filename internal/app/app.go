@@ -33,7 +33,7 @@ func Run() {
 	log.Debug(getDbURL(cfg))
 
 	log.Info("Initializing routers...")
-	router := v1.InitRouters(queries, log)
+	router := v1.InitRouters(queries, log, cfg)
 
 	srv := &http.Server{
 		Addr: cfg.Address,
@@ -44,7 +44,7 @@ func Run() {
 	}
 
 	if err := srv.ListenAndServe(); err != nil {  
-		log.Error("failed to start server")
+		log.Error("failed to start server", err)
 	}
 
 	log.Error("server stopped")

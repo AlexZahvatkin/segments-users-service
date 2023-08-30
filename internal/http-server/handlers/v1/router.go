@@ -1,8 +1,11 @@
 package v1
 
 import (
+	"fmt"
 	"log/slog"
 
+	"github.com/AlexZahvatkin/segments-users-service/config"
+	_ "github.com/AlexZahvatkin/segments-users-service/docs"
 	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers/v1/segments"
 	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers/v1/users"
 	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers/v1/users_in_segments"
@@ -11,9 +14,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func InitRouters(storage storage.Storage, log *slog.Logger) *chi.Mux {
+func InitRouters(storage storage.Storage, log *slog.Logger, cfg *config.Config) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -43,6 +47,9 @@ func InitRouters(storage storage.Storage, log *slog.Logger) *chi.Mux {
 	v1Router.Delete("/segments", segments.DeleteSegmentHandler(log, storage))
 
 	router.Mount("/v1", v1Router)
+ 
+
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Address))))
 
 	return router
 }

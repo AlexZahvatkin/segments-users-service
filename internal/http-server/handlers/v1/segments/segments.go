@@ -120,7 +120,7 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.
 			return
 		}
 
-		httpserver.RespondWithJSON(w, http.StatusOK, log, responseSegmentAndUsers{
+		httpserver.RespondWithJSON(w, http.StatusCreated, log, responseSegmentAndUsers{
 			Segment: respSegm,
 			Users:   userIds,
 		})

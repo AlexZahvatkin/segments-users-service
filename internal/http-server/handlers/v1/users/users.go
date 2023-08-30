@@ -16,6 +16,16 @@ type UserAdder interface {
 	AddUser(context.Context, string) (models.User, error)
 }
 
+// @Summary Add new user
+// @Description Add new user
+// @Tags Creates new user with a given name 
+// @Accept  json
+// @Produce  json
+// @ID create-user
+// @Param name body string true "user name"
+// @Success 200 {object} models.User models.User
+// @Router /users [post]
+
 func AddUserHandler(log *slog.Logger, userAdder UserAdder) http.HandlerFunc {
 	type request struct {
 		Name string `json:"name" validate:"required,min=4,max=255"`
@@ -46,7 +56,7 @@ func AddUserHandler(log *slog.Logger, userAdder UserAdder) http.HandlerFunc {
 			return
 		}
 
-		httpserver.RespondWithJSON(w, http.StatusOK, log, user)
+		httpserver.RespondWithJSON(w, http.StatusCreated, log, user)
 	}
 }
 

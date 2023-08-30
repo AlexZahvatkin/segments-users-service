@@ -1,0 +1,15 @@
+basePath: /v1
+consumes:
+- application/json
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server segments management.
+  title: Segments Users Service
+  version: "1.0"
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
