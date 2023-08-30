@@ -29,6 +29,11 @@ type SegmentDeleter interface {
 	GetSegmentByName(ctx context.Context, name string) (models.Segment, error) 
 }
 
+type SegmentAutoAssigner interface {
+	GetAllUsersId(ctx context.Context) ([]int64, error)
+	AddSegment(context.Context, models.AddSegmentParams) (models.Segment, error)
+}
+
 type responseSegment struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
@@ -131,5 +136,14 @@ func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.
 		}
 
 		httpserver.RespondWithJSON(w, http.StatusOK, log, struct{}{})
+	}
+}
+
+
+
+func AddAndAssignSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) {
+	type request struct {
+		Name        string `json:"name" validate:"required,min=4,max=255"`
+		Description string `json:"description"`
 	}
 }

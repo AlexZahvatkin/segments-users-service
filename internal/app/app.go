@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/AlexZahvatkin/segments-users-service/config"
-	"github.com/AlexZahvatkin/segments-users-service/internal/database"
+	"github.com/AlexZahvatkin/segments-users-service/internal/storage/database"
 	v1 "github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers/v1"
 	"github.com/AlexZahvatkin/segments-users-service/internal/lib/logger"
 	_ "github.com/lib/pq"

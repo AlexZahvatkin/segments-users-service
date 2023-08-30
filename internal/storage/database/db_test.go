@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexZahvatkin/segments-users-service/internal/database"
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
+	"github.com/AlexZahvatkin/segments-users-service/internal/storage/database"
 	"github.com/AlexZahvatkin/segments-users-service/internal/utils/testutils"
 	"github.com/stretchr/testify/assert"
 )

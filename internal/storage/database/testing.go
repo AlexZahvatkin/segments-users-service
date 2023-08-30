@@ -22,7 +22,7 @@ func TestDB(t *testing.T, databaseUrl string) (*Queries) {
 		t.Fatal(err)
 	}
 
-	m, err := migrate.New("file://../sql/postgresql/schema", databaseUrl)
+	m, err := migrate.New("file://../../sql/postgresql/schema", databaseUrl)
 	if err != nil {
 		t.Fatal(err)
 	}
