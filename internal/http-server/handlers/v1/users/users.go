@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/AlexZahvatkin/segments-users-service/internal/http-server"
+	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers"
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -24,10 +24,7 @@ func AddUserHandler(log *slog.Logger, userAdder UserAdder) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.AddUserHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
@@ -63,10 +60,7 @@ func DeleteUserHandler(log *slog.Logger, userDeleter UserDeleter) http.HandlerFu
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteUserHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {

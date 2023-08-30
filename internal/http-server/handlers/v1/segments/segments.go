@@ -3,14 +3,17 @@ package segments
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/AlexZahvatkin/segments-users-service/internal/http-server"
+	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers"
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
 	"github.com/AlexZahvatkin/segments-users-service/internal/use-cases/segments"
-	"github.com/go-chi/chi/middleware"
+	usecases_user_segments "github.com/AlexZahvatkin/segments-users-service/internal/use-cases/user_segments"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -26,12 +29,17 @@ type SegmentAdder interface {
 
 type SegmentDeleter interface {
 	DeleteSegment(context.Context, string) error
-	GetSegmentByName(ctx context.Context, name string) (models.Segment, error) 
+	GetSegmentByName(ctx context.Context, name string) (models.Segment, error)
 }
 
 type SegmentAutoAssigner interface {
+	SegmentAdder
+	AutoAssigner
+}
+
+type AutoAssigner interface {
 	GetAllUsersId(ctx context.Context) ([]int64, error)
-	AddSegment(context.Context, models.AddSegmentParams) (models.Segment, error)
+	AddUserIntoSegment(ctx context.Context, arg models.AddUserIntoSegmentParams) (models.UsersInSegment, error)
 }
 
 type responseSegment struct {
@@ -41,21 +49,24 @@ type responseSegment struct {
 	Updated_At  time.Time `json:"updated_at"`
 }
 
-func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.HandlerFunc {
+type responseSegmentAndUsers struct {
+	Segment responseSegment `json:"segment"`
+	Users   []int64         `json:"added_users_ids"`
+}
+
+func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.HandlerFunc {
 	type request struct {
-		Name        string `json:"name" validate:"required,min=4,max=255"`
-		Description string `json:"description"`
+		Name        string  `json:"name" validate:"required,min=4,max=255"`
+		Description string  `json:"description"`
+		Percent     float64 `json:"percent"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.AddSegmentHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
-		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
+		req, err := httpserver.DecodeRequsetBody(w, r, request{}, log)
 		if err != nil {
 			return
 		}
@@ -67,8 +78,7 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 			return
 		}
 
-		if len(req.Description) > maxDescriptionLength {
-			httpserver.RespondWithError(w, http.StatusBadRequest, "Description is too long", log)
+		if err := checkDescriptionLength(log, req.Description, w); err != nil {
 			return
 		}
 
@@ -80,10 +90,10 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 		}
 
 		addedSegment, err := segmentAdder.AddSegment(r.Context(), models.AddSegmentParams{
-			Name:        req.Name,
-            Description: sql.NullString{
+			Name: req.Name,
+			Description: sql.NullString{
 				String: req.Description,
-				Valid: true,
+				Valid:  true,
 			},
 		})
 		if err != nil {
@@ -93,14 +103,27 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 			return
 		}
 
-		resp := responseSegment{
+		respSegm := responseSegment{
 			Name:        addedSegment.Name,
 			Description: addedSegment.Description.String,
 			Created_At:  addedSegment.CreatedAt,
 			Updated_At:  addedSegment.UpdatedAt,
 		}
 
-		httpserver.RespondWithJSON(w, http.StatusOK, log, resp)
+		if req.Percent == 0 {
+			httpserver.RespondWithJSON(w, http.StatusOK, log, respSegm)
+			return
+		}
+
+		userIds, err := assignProcentOfUsersToSegment(log, segmentAdder, w, r, req.Percent, req.Name)
+		if err != nil {
+			return
+		}
+
+		httpserver.RespondWithJSON(w, http.StatusOK, log, responseSegmentAndUsers{
+			Segment: respSegm,
+			Users:   userIds,
+		})
 	}
 }
 
@@ -108,20 +131,15 @@ func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteSegmentHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		req := r.URL.Query().Get("name")
 		if req == "" {
 			httpserver.RespondWithError(w, http.StatusBadRequest, "Name is required", log)
-            return
+			return
 		}
 
 		log.Info("Get requested segment name", slog.String("name", req))
-
-		req = usecases_segments.FormatSegmnetName(req)
 
 		if _, err := segmentDeleter.GetSegmentByName(r.Context(), req); err != nil {
 			httpserver.RespondWithError(w, http.StatusBadRequest, "Invalid segment name", log)
@@ -139,11 +157,44 @@ func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.
 	}
 }
 
+func assignProcentOfUsersToSegment(log *slog.Logger, autoAssigner AutoAssigner, w http.ResponseWriter,
+	r *http.Request, percent float64, segmentName string) ([]int64, error) {
+	ids, err := autoAssigner.GetAllUsersId(r.Context())
+	if err != nil {
+		log.Error(err.Error())
 
-
-func AddAndAssignSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) {
-	type request struct {
-		Name        string `json:"name" validate:"required,min=4,max=255"`
-		Description string `json:"description"`
+		httpserver.RespondWithError(w, http.StatusInternalServerError, "Could not get users", log)
+		return nil, err
 	}
+
+	pickedIds, err := usecases_user_segments.PickRandomIds(percent, ids)
+	if err != nil {
+		httpserver.RespondWithError(w, http.StatusBadRequest, err.Error(), log)
+		return nil, err
+	}
+
+	var res []int64
+	for _, id := range pickedIds {
+		_, err := autoAssigner.AddUserIntoSegment(r.Context(), models.AddUserIntoSegmentParams{
+			UserID:      id,
+			SegmentName: segmentName,
+		})
+		if err != nil {
+			log.Error(err.Error())
+
+			httpserver.RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not add user %d", id), log)
+			return nil, err
+		}
+		res = append(res, id)
+	}
+
+	return res, nil
+}
+
+func checkDescriptionLength(log *slog.Logger, description string, w http.ResponseWriter) error {
+	if len(description) > maxDescriptionLength {
+		httpserver.RespondWithError(w, http.StatusBadRequest, "Description is too long", log)
+		return errors.New("Too long description")
+	}
+	return nil
 }

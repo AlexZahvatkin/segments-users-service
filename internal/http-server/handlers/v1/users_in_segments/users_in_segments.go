@@ -10,8 +10,8 @@ import (
 	"time"
 
 	httpserver "github.com/AlexZahvatkin/segments-users-service/internal/http-server"
+	"github.com/AlexZahvatkin/segments-users-service/internal/http-server/handlers"
 	"github.com/AlexZahvatkin/segments-users-service/internal/models"
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -74,10 +74,7 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.SegmentsAssignHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
@@ -155,10 +152,7 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.SegmentsAssignHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
 		if err != nil {
@@ -205,10 +199,7 @@ func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.GetSegmentsForUserHandler"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
@@ -244,10 +235,7 @@ func GetSegmentsHistoryByUser(log *slog.Logger, getter SegmentHistoryGetter) htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.GetSegmentsHistoryByUser"
 
-		log = log.With(
-			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+		handlers.SetLogger(log, r.Context(), op)
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
 		if err!= nil {
