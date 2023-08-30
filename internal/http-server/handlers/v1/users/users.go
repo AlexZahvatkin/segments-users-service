@@ -17,15 +17,16 @@ type UserAdder interface {
 }
 
 // @Summary Add new user
-// @Description Add new user
-// @Tags Creates new user with a given name 
+// @Description Creates new user with a given name
+// @Tags Users 
 // @Accept  json
 // @Produce  json
 // @ID create-user
-// @Param name body string true "user name"
-// @Success 200 {object} models.User models.User
-// @Router /users [post]
-
+// @Param name body string true "User name"
+// @Success 201 {object} models.User
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/users [post]
 func AddUserHandler(log *slog.Logger, userAdder UserAdder) http.HandlerFunc {
 	type request struct {
 		Name string `json:"name" validate:"required,min=4,max=255"`
@@ -66,6 +67,17 @@ type UserDeleter interface {
 	GetUserById(context.Context, int64) (models.User, error)
 }
 
+// @Summary Delete user
+// @Description Deletes user with a given id
+// @Tags Users 
+// @Accept  json
+// @Produce  json
+// @ID delete-user
+// @Param id path int true "User ID"
+// @Success 200
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/users [delete]
 func DeleteUserHandler(log *slog.Logger, userDeleter UserDeleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteUserHandler"

@@ -54,6 +54,20 @@ type responseSegmentAndUsers struct {
 	Users   []int64         `json:"added_users_ids"`
 }
 
+// @Summary Adds a segment
+// @Description Adds a segment. If percent is provided, automatically assign that percentage of users to the segment.
+// @Tags Segments 
+// @Accept  json
+// @Produce  json
+// @ID add-segment
+// @Param name body string true "Segment name"
+// @Param description body string false "Description"
+// @Param percent body number false "Percent of users to be assigned to the segment"
+// @Success 201 {object} responseSegment
+// @Success 201 {object} responseSegmentAndUsers
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments [post]
 func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.HandlerFunc {
 	type request struct {
 		Name        string  `json:"name" validate:"required,min=4,max=255"`
@@ -111,7 +125,7 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.
 		}
 
 		if req.Percent == 0 {
-			httpserver.RespondWithJSON(w, http.StatusOK, log, respSegm)
+			httpserver.RespondWithJSON(w, http.StatusCreated, log, respSegm)
 			return
 		}
 
@@ -127,6 +141,17 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.
 	}
 }
 
+// @Summary Delete a segment
+// @Description Delete a segment using its name.
+// @Tags Segments 
+// @Accept  json
+// @Produce  json
+// @ID delete-segment
+// @Param name query string true "Segment name"
+// @Success 200
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments [delete]
 func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.DeleteSegmentHandler"

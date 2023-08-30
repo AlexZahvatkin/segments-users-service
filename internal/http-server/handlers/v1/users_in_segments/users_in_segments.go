@@ -65,6 +65,18 @@ type UsersInSegmentsHistoryResponse struct {
 	ActionDate  time.Time `json:"action_date"`
 }
 
+// @Summary Assigns segments to a user.
+// @Description Adds and deletes segments provided by a request for user with provied id.
+// @Tags Useres in segments 
+// @Accept  json
+// @Produce  json
+// @ID segments-assign
+// @Param userId path int true "User id"
+// @Param segments body models.SegmentAssignRequest true "Segments to delete and add for user"
+// @Success 200 {object} UsersInSegmentsResponse
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments/assign/{userId} [post]
 func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.HandlerFunc {
 	type request struct {
 		SegmentsToDeleteNames []string `json:"to_delete"`
@@ -143,6 +155,18 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 	}
 }
 
+// @Summary Assigns segments to a user with ttl.
+// @Description Adds a provided segment to a provided user with TTL in hours.
+// @Tags Useres in segments 
+// @Accept  json
+// @Produce  json
+// @ID segments-assign-with-ttl
+// @Param userId path int true "User id"
+// @Param segments body models.SegmentAssignWithTTLRequest true "Segment to assign and TTL in hours"
+// @Success 200 {object} UsersInSegmentsResponse
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments/ttl/{userId} [post]
 func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssignerWithTTL) http.HandlerFunc {
 	type request struct {
 		SegmentName string `json:"segment_name" validate:"required"`
@@ -195,6 +219,18 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 	}
 }
 
+// @Summary Segments for user
+// @Description Returns a list of segments that are active for a provided user.
+// @Tags Useres in segments 
+// @Accept  json
+// @Produce  json
+// @ID get-segments-for-user
+// @Param userId path int true "User id"
+// @Success 200 {object} []string
+// @Success 204 
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments/{userId} [get]
 func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.GetSegmentsForUserHandler"
@@ -231,6 +267,19 @@ func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) h
 	}
 }
 
+// @Summary Segments history for user
+// @Description Returns a history of added and deleted segments for a provided user in a given period.
+// @Tags Useres in segments 
+// @Accept  json
+// @Produce  json
+// @ID get-segments-for-user-history
+// @Param userId path int true "User id"
+// @Param from path string true "From datetime"
+// @Param to path string true "To datetime"
+// @Success 200 {object} []string
+// @Failure 400 {object} error
+// @Failure 500 {object} error
+// @Router /v1/segments/history/{userId} [get]
 func GetSegmentsHistoryByUser(log *slog.Logger, getter SegmentHistoryGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.v1.GetSegmentsHistoryByUser"

@@ -1,13 +1,340 @@
 basePath: /v1
 consumes:
 - application/json
+definitions:
+  models.SegmentAssignRequest:
+    properties:
+      to_add:
+        items:
+          type: string
+        type: array
+      to_delete:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SegmentAssignWithTTLRequest:
+    properties:
+      segment_name:
+        type: string
+      ttl:
+        type: integer
+    required:
+    - segment_name
+    - ttl
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  segments.responseSegment:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  segments.responseSegmentAndUsers:
+    properties:
+      added_users_ids:
+        items:
+          type: integer
+        type: array
+      segment:
+        $ref: '#/definitions/segments.responseSegment'
+    type: object
+  users_in_segments.UsersInSegmentsResponse:
+    properties:
+      created_at:
+        type: string
+      expire_at:
+        type: string
+      segment_name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: API Server segments management.
   title: Segments Users Service
   version: "1.0"
-paths: {}
+paths:
+  /v1/segments:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a segment using its name.
+      operationId: delete-segment
+      parameters:
+      - description: Segment name
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete a segment
+      tags:
+      - Segments
+    post:
+      consumes:
+      - application/json
+      description: Adds a segment. If percent is provided, automatically assign that
+        percentage of users to the segment.
+      operationId: add-segment
+      parameters:
+      - description: Segment name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Description
+        in: body
+        name: description
+        schema:
+          type: string
+      - description: Percent of users to be assigned to the segment
+        in: body
+        name: percent
+        schema:
+          type: number
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/segments.responseSegmentAndUsers'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Adds a segment
+      tags:
+      - Segments
+  /v1/segments/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of segments that are active for a provided user.
+      operationId: get-segments-for-user
+      parameters:
+      - description: User id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Segments for user
+      tags:
+      - Useres in segments
+  /v1/segments/assign/{userId}:
+    post:
+      consumes:
+      - application/json
+      description: Adds and deletes segments provided by a request for user with provied
+        id.
+      operationId: segments-assign
+      parameters:
+      - description: User id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Segments to delete and add for user
+        in: body
+        name: segments
+        required: true
+        schema:
+          $ref: '#/definitions/models.SegmentAssignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users_in_segments.UsersInSegmentsResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Assigns segments to a user.
+      tags:
+      - Useres in segments
+  /v1/segments/history/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a history of added and deleted segments for a provided
+        user in a given period.
+      operationId: get-segments-for-user-history
+      parameters:
+      - description: User id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: From datetime
+        in: path
+        name: from
+        required: true
+        type: string
+      - description: To datetime
+        in: path
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Segments history for user
+      tags:
+      - Useres in segments
+  /v1/segments/ttl/{userId}:
+    post:
+      consumes:
+      - application/json
+      description: Adds a provided segment to a provided user with TTL in hours.
+      operationId: segments-assign-with-ttl
+      parameters:
+      - description: User id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Segment to assign and TTL in hours
+        in: body
+        name: segments
+        required: true
+        schema:
+          $ref: '#/definitions/models.SegmentAssignWithTTLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users_in_segments.UsersInSegmentsResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Assigns segments to a user with ttl.
+      tags:
+      - Useres in segments
+  /v1/users:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes user with a given id
+      operationId: delete-user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete user
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Creates new user with a given name
+      operationId: create-user
+      parameters:
+      - description: User name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Add new user
+      tags:
+      - Users
 produces:
 - application/json
 schemes:

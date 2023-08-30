@@ -1,5 +1,5 @@
 run: ### Run docker-compose
-	docker-compose up --build -d server && docker-compose logs -f
+	docker-compose up --build -d service && docker-compose logs -f
 .PHONY: run
 
 down: ### Down docker-compose
