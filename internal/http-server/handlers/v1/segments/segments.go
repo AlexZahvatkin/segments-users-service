@@ -38,14 +38,14 @@ type responseSegment struct {
 	Updated_At  time.Time `json:"updated_at"`
 }
 
-func AddSegmemtHandler(log *slog.Logger, segmentAdder SegmentAdder) http.HandlerFunc {
+func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAdder) http.HandlerFunc {
 	type request struct {
 		Name        string `json:"name" validate:"required,min=4,max=255"`
 		Description string `json:"description"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.v1.AddSegmemtHandler"
+		const op = "handlers.v1.AddSegmentHandler"
 
 		log = log.With(
 			slog.String("op", op),
@@ -104,13 +104,13 @@ func AddSegmemtHandler(log *slog.Logger, segmentAdder SegmentAdder) http.Handler
 	}
 }
 
-func DeleteSegmemtHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.HandlerFunc {
+func DeleteSegmentHandler(log *slog.Logger, segmentDeleter SegmentDeleter) http.HandlerFunc {
 	type request struct {
 		Name string `json:"name" validate:"required"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.v1.DeleteSegmemtHandler"
+		const op = "handlers.v1.DeleteSegmentHandler"
 
 		log = log.With(
 			slog.String("op", op),

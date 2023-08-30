@@ -31,5 +31,5 @@ type AddUserIntoSegmentWithExpireDatetimeParams struct {
 
 type AddSegmentParams struct {
 	Name        string
-	Description sql.NullString 
+	Description sql.NullString
 }

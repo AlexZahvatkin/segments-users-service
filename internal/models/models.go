@@ -7,24 +7,24 @@ import (
 
 type Segment struct {
 	Name        string
+	Description sql.NullString
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Description sql.NullString
 }
 
 type User struct {
-	ID        int64
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UsersInSegment struct {
 	UserID      int64
 	SegmentName string
+	ExpireAt    sql.NullTime
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	ExpireAt    sql.NullTime
 }
 
 type UsersInSegmentsHistory struct {

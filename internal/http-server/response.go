@@ -1,12 +1,13 @@
 package httpserver
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/AlexZahvatkin/segments-users-service/internal/utils/validator"
+	"github.com/go-playground/validator/v10"
 )
 
 func RespondWithError(w http.ResponseWriter, code int, msg string, log *slog.Logger) {
@@ -35,6 +36,16 @@ func RespondWithJSON(w http.ResponseWriter, code int, log *slog.Logger, payload 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(dat)
+}
+
+func RespondWithCSV(w http.ResponseWriter, code int, log *slog.Logger, payload [][]string) {
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=report.csv")
+
+	writer := csv.NewWriter(w)
+	if err := writer.WriteAll(payload); err!= nil {
+		log.Error("Failed to write CSV response: %v", payload)
+	}
 }
 
 func RespondWithValidateError(w http.ResponseWriter, log *slog.Logger, err error) {

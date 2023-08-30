@@ -20,6 +20,10 @@ func ValidationError(errs validator.ValidationErrors) string {
 			errMsgs = append(errMsgs, fmt.Sprintf("field %s is too short", err.Field()))
 		case "max":
 			errMsgs = append(errMsgs, fmt.Sprintf("field %s is too long", err.Field()))
+		case "datetime":
+			errMsgs = append(errMsgs, fmt.Sprintf("field %s must be datetime", err.Field()))
+		case "gt=0":
+			errMsgs = append(errMsgs, fmt.Sprintf("field %s must be greater than 0", err.Field()))
 		default:
 			errMsgs = append(errMsgs, fmt.Sprintf("field %s is not valid", err.Field()))
 		}
