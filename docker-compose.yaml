@@ -7,16 +7,16 @@ services:
     environment:
       - TEST_DATABASE_NAME=segments_test
       - POSTGRES_HOST=host.docker.internal
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=segments
-      - POSTGRES_SSLMODE=disable
-      - ENV_TYPE=local
-      - SERVER_HOST=0.0.0.0
-      - SERVER_PORT=8080
-      - SERVER_TIMEOUT=4s
-      - SERVER_IDLE_TIMEOUT=60s
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-segments}
+      - POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-disable}
+      - ENV_TYPE=${ENV_TYPE:-local}
+      - SERVER_HOST=${SERVER_HOST:-0.0.0.0}
+      - SERVER_PORT=${SERVER_PORT:-8080}
+      - SERVER_TIMEOUT=-4s
+      - SERVER_IDLE_TIMEOUT=-60s
     env_file:
       - ./.env
     ports:

@@ -1,8 +1,8 @@
-run: ### Run docker-compose
+run:
 	docker-compose up --build -d server && docker-compose logs -f
 .PHONY: run
 
-down: ### Down docker-compose
+down:
 	docker-compose down --remove-orphans
 .PHONY: down
 
