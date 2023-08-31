@@ -49,7 +49,7 @@ func InitRouters(storage storage.Storage, log *slog.Logger, cfg *config.Config) 
 	router.Mount("/v1", v1Router)
  
 
-	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Address))))
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.HTTPServer.Host + ":" + cfg.HTTPServer.Port))))
 
 	return router
 }

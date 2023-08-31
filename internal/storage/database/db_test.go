@@ -3,6 +3,7 @@ package database_test
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -19,7 +20,14 @@ var (
 
 func TestMain(m *testing.M) {
 	testutils.LoadEnv()
-	databaseURL = os.Getenv("TEST_DATABASE_URL")
+	host := os.Getenv("POSTGRES_HOST")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	name := os.Getenv("TEST_DATABASE_URL")
+	sslMode := os.Getenv("POSTGRES_SSLMODE")
+
+	databaseURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, name, sslMode)
 
 	os.Exit(m.Run())
 }

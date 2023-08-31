@@ -4,18 +4,17 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	Env         string `yaml:"env" env:"ENV" env-default:"local"`
-	HTTPServer  `yaml:"http_server"`
-	Database    `yaml:"database"`
+	Env        string `yaml:"env" env:"ENV" env-default:"local"`
+	HTTPServer `yaml:"http_server"`
+	Database   `yaml:"database"`
 }
 
 type HTTPServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8080"`
+	Port        string        `yaml:"port" env-default:"8080"`
+	Host        string        `yaml:"address" env-default:"localhost"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
@@ -30,19 +29,29 @@ type Database struct {
 }
 
 func MustLoad() *Config {
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
-	}
-
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
-	}
-
 	var cfg Config
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+	cfg.Env = os.Getenv("ENV_TYPE")
+	cfg.HTTPServer.Port = os.Getenv("SERVER_PORT")
+	cfg.HTTPServer.Host = os.Getenv("SERVER_HOST")
+	timeout := os.Getenv("SERVER_TIMEOUT")
+	timeoutDur, err := time.ParseDuration(timeout)
+	if err != nil {
+		log.Fatal("Wrong timeout format")
 	}
+	cfg.HTTPServer.Timeout = timeoutDur
+	idleTimeout := os.Getenv("SERVER_IDLE_TIMEOUT")
+	idleTimeoutDur, err := time.ParseDuration(idleTimeout)
+	if err != nil {
+		log.Fatal("Wrong idle timeout format")
+	}
+	cfg.HTTPServer.IdleTimeout = idleTimeoutDur
+
+	cfg.Database.Host = os.Getenv("POSTGRES_HOST")
+	cfg.Database.Port = os.Getenv("POSTGRES_PORT")
+	cfg.Database.User = os.Getenv("POSTGRES_USER")
+	cfg.Database.Password = os.Getenv("POSTGRES_PASSWORD")
+	cfg.Database.Name = os.Getenv("POSTGRES_DB")
+	cfg.Database.SSLMode = os.Getenv("POSTGRES_SSLMODE")
 
 	return &cfg
 }

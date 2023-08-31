@@ -23,67 +23,46 @@
 #     restart: on-failure
 # volumes:
 #   data:
-# version: '3.8'
-
-# services:
-#   server:
-#     container_name: server
-#     build: .
-#     command: ./wait-for.sh db ./server
-#     environment:
-#       - DB_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_DB:-database}:5432/${POSTGRES_DB:-database}?sslmode=disable
-#       - PORT=${HTTP_PORT:-8080}
-#     env_file:
-#       - .env
-#     ports:
-#       - 8080:8080
-#     depends_on:
-#       - database
-#     restart: unless-stopped
-
-#   database:
-#     container_name: database
-#     hostname: database
-#     image: postgres
-#     volumes:
-#       - pg_data:/var/lib/postgresql/data
-#     ports:
-#       - 5432:5432
-#     environment:
-#       - POSTGRES_USER=${POSTGRES_USER:-postgres}
-#       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-#       - POSTGRES_DB=${POSTGRES_DB:-database}
-#     # restart: unless-stopped
-
-# volumes:
-#   pg_data:
+version: '3.8'
 
 services:
-  postgres:
-    image: postgres
-    container_name: postgres
-    ports:
-      - 5432:5432
-    env_file:
-      - .env
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres12}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-testing2}
-  service:
-    container_name: service
+  server:
+    container_name: server
     build: .
+    # command: ./wait-for.sh db ./server
+    environment:
+      - TEST_DATABASE_NAME=segments_test
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=segments
+      - POSTGRES_SSLMODE=disable
+      - ENV_TYPE=local
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_TIMEOUT=4s
+      - SERVER_IDLE_TIMEOUT=60s
     env_file:
-      - .env
+      - ./.env
     ports:
       - 8080:8080
-    # command: go run ./cmd/app/main.go
-    volumes:
-      - ./reports:/usr/src/app/reports
     depends_on:
-      - postgres
+      - postgresql
+    restart: unless-stopped
+
+  postgresql:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:latest
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-segments}
 
 volumes:
-  postgres:
+  postgres-db:

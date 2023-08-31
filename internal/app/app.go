@@ -36,7 +36,7 @@ func Run() {
 	router := v1.InitRouters(queries, log, cfg)
 
 	srv := &http.Server{
-		Addr: cfg.Address,
+		Addr: cfg.HTTPServer.Host + ":" + cfg.HTTPServer.Port,
 		Handler: router,
 		ReadTimeout: cfg.HTTPServer.Timeout,
 		WriteTimeout: cfg.HTTPServer.Timeout,
@@ -61,7 +61,8 @@ func initDb(dbURL string, log *slog.Logger) *database.Queries {
 }
 
 func getDbURL(cfg *config.Config) string{
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.SSLMode)
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.Database.User, cfg.Database.Password, 
+	cfg.Database.Host, cfg.Database.Port, cfg.Database.Name, cfg.Database.SSLMode)
 }
 
 func setupLogger(env string) *slog.Logger {

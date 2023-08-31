@@ -51,51 +51,7 @@ func TestAddUserHandler(t *testing.T) {
 			require.NoError(t, err)
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
-			require.Equal(t, rr.Code, tc.statusCode)	
-		})
-	}
-}
-
-func DeleteUserHandler(t *testing.T) {
-	cases := []struct {
-		name string
-		statusCode int
-		isInDb bool
-		isIdProvied bool
-	} {
-		{
-			name: "Valid id",
-			statusCode: http.StatusOK,
-			isInDb: true,
-			isIdProvied: true,
-		},
-		{
-			name: "No user in db",
-			statusCode: http.StatusBadRequest,
-			isInDb: false,
-			isIdProvied: true,
-		},
-		{
-			name: "No id provided",
-			statusCode: http.StatusBadRequest,
-			isInDb: true,
-			isIdProvied: false,
-		},
-	}
-
-	for _, tc := range cases {
-		tc := tc
-
-		t.Run(tc.name, func(t *testing.T) { 
-			t.Parallel()
-
-			userDeleter := mocks.NewUserDeleter(t)
-			userDeleter.On("DeleteUser")
-			if tc.isInDb {
-                userDeleter.On("GetUserById")
-            } else {
-				userDeleter.On("GetUserById")
-			}
+			require.Equal(t, tc.statusCode, rr.Code)
 		})
 	}
 }

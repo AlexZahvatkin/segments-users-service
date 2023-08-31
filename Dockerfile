@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -tags migrate -o /bin/app ./cmd/segments-users-service
     # go build -o bin/app ./cmd/segments-users-service
 
-RUN chmod +x wait-for.sh
+# RUN chmod +x wait-for.sh
 
 # RUN go mod tidy
 FROM scratch
