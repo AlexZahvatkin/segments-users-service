@@ -1,11 +1,11 @@
 env: "local" # local, dev, prod
 
-http_server: 
+http_server:
   address: "0.0.0.0:8080"
   timeout: 4s
   idle_timeout: 60s
 
-database: 
+database:
   host: "postgres"
   port: "5432"
   user: "postgres"

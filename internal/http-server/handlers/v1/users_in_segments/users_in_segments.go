@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	timeFormat = "2006-01-02T15:04:05Z07:00"	//RFC3339 
+	timeFormat = "2006-01-02T15:04:05Z07:00" //RFC3339
 )
 
 type SegmentsAssigner interface {
@@ -67,7 +67,7 @@ type UsersInSegmentsHistoryResponse struct {
 
 // @Summary Assigns segments to a user.
 // @Description Adds and deletes segments provided by a request for user with provied id.
-// @Tags Useres in segments 
+// @Tags Useres in segments
 // @Accept  json
 // @Produce  json
 // @ID segments-assign
@@ -88,22 +88,22 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 
 		handlers.SetLogger(log, r.Context(), op)
 
-		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
+		req, err := httpserver.DecodeRequsetBody(w, r, request{}, log)
 		if err != nil {
 			return
 		}
 
 		log.Info("request body decoded", slog.Any("request", req))
 
-		if err := validator.New().Struct(req); err!= nil {
+		if err := validator.New().Struct(req); err != nil {
 			httpserver.RespondWithValidateError(w, log, err)
 			return
 		}
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
-		if err!= nil {
-            return
-        }
+		if err != nil {
+			return
+		}
 
 		if !checkIfUserExists(assigner, log, userId, w, r) {
 			return
@@ -157,7 +157,7 @@ func SegmentsAssignHandler(log *slog.Logger, assigner SegmentsAssigner) http.Han
 
 // @Summary Assigns segments to a user with ttl.
 // @Description Adds a provided segment to a provided user with TTL in hours.
-// @Tags Useres in segments 
+// @Tags Useres in segments
 // @Accept  json
 // @Produce  json
 // @ID segments-assign-with-ttl
@@ -178,19 +178,19 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 
 		handlers.SetLogger(log, r.Context(), op)
 
-		req, err := httpserver.DecodeRequsetBody(w, r, request {}, log)
+		req, err := httpserver.DecodeRequsetBody(w, r, request{}, log)
 		if err != nil {
 			return
 		}
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
-		if err!= nil {
-            return
-        }
+		if err != nil {
+			return
+		}
 
 		log.Info("request body decoded", slog.Any("request", req))
 
-		if err := validator.New().Struct(req); err!= nil {
+		if err := validator.New().Struct(req); err != nil {
 			httpserver.RespondWithValidateError(w, log, err)
 			return
 		}
@@ -204,9 +204,9 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 		}
 
 		res, err := assigner.AddUserIntoSegmentWithTTLInHours(r.Context(), models.AddUserIntoSegmentWithTTLInHoursParams{
-			UserID: userId,
-			SegmentName: req.SegmentName,
-            NumberOfHours: req.TTL,
+			UserID:        userId,
+			SegmentName:   req.SegmentName,
+			NumberOfHours: req.TTL,
 		})
 		if err != nil {
 			log.Error(err.Error())
@@ -221,13 +221,13 @@ func SegmentsAssignWithTTLInHoursHandler(log *slog.Logger, assigner SegmentsAssi
 
 // @Summary Segments for user
 // @Description Returns a list of segments that are active for a provided user.
-// @Tags Useres in segments 
+// @Tags Useres in segments
 // @Accept  json
 // @Produce  json
 // @ID get-segments-for-user
 // @Param userId path int true "User id"
 // @Success 200 {object} []string
-// @Success 204 
+// @Success 204
 // @Failure 400 {object} error
 // @Failure 500 {object} error
 // @Router /v1/segments/{userId} [get]
@@ -238,9 +238,9 @@ func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) h
 		handlers.SetLogger(log, r.Context(), op)
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
-		if err!= nil {
-            return
-        }
+		if err != nil {
+			return
+		}
 
 		if !checkIfUserExists(getter, log, userId, w, r) {
 			return
@@ -269,7 +269,7 @@ func GetSegmentsForUserHandler(log *slog.Logger, getter SegmentsForUserGetter) h
 
 // @Summary Segments history for user
 // @Description Returns a history of added and deleted segments for a provided user in a given period.
-// @Tags Useres in segments 
+// @Tags Useres in segments
 // @Accept  json
 // @Produce  json
 // @ID get-segments-for-user-history
@@ -287,19 +287,19 @@ func GetSegmentsHistoryByUser(log *slog.Logger, getter SegmentHistoryGetter) htt
 		handlers.SetLogger(log, r.Context(), op)
 
 		userId, err := httpserver.GetUserIdFromParams(w, r, log)
-		if err!= nil {
-            return
-        }
+		if err != nil {
+			return
+		}
 
 		from, err := httpserver.GetTimeFromParams(w, r, log, "from", timeFormat)
-		if err!= nil {
+		if err != nil {
 			return
 		}
 
 		to, err := httpserver.GetTimeFromParams(w, r, log, "to", timeFormat)
-        if err!= nil {
-            return
-        }
+		if err != nil {
+			return
+		}
 
 		if !checkIfUserExists(getter, log, userId, w, r) {
 			return

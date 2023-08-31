@@ -18,7 +18,7 @@ func LoadEnv() {
 	basepath := filepath.Dir(file)
 
 	err := godotenv.Load(filepath.Join(basepath, "../../../.env"))
-	if err!= nil {
+	if err != nil {
 		fmt.Fprint(os.Stderr, "Unable to load .env file", err)
 	}
 }

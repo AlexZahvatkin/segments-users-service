@@ -16,35 +16,35 @@ import (
 
 func TestAddUserHandler(t *testing.T) {
 	cases := []struct {
-		name string
+		name        string
 		requestBody string
-		statusCode int
-	} {
+		statusCode  int
+	}{
 		{
-			name: "Valid name",
+			name:        "Valid name",
 			requestBody: `{"name": "example"}`,
-			statusCode: http.StatusCreated,
+			statusCode:  http.StatusCreated,
 		},
 		{
-			name: "No name in request body",
+			name:        "No name in request body",
 			requestBody: `{"wrong": "example"}`,
-			statusCode: http.StatusBadRequest,
+			statusCode:  http.StatusBadRequest,
 		},
 		{
-			name: "Short name in request body",
+			name:        "Short name in request body",
 			requestBody: `{"name": "s"}`,
-			statusCode: http.StatusBadRequest,
+			statusCode:  http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range cases {
 		tc := tc
 
-		t.Run(tc.name, func(t *testing.T) { 
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			userAdderMock := mocks.NewUserAdder(t)
-			userAdderMock.On("AddUser", mock.Anything, mock.Anything).Return(models.User{}, nil).Maybe();
+			userAdderMock.On("AddUser", mock.Anything, mock.Anything).Return(models.User{}, nil).Maybe()
 
 			handler := users.AddUserHandler(slogdiscard.NewDiscardLogger(), userAdderMock)
 			req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewReader([]byte(tc.requestBody)))

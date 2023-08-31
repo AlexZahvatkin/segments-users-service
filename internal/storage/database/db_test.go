@@ -32,7 +32,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-
 func TestAddUser(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	user := models.NewTestUser()
@@ -46,7 +45,7 @@ func TestGetAllUsers(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	user := models.NewTestUser()
 	query.AddUser(context.Background(), user.Name)
-	query.AddUser(context.Background(), user.Name + "2")
+	query.AddUser(context.Background(), user.Name+"2")
 	res, err := query.GetAllUsersId(context.Background())
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -70,7 +69,7 @@ func TestAddSegment(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	res, err := query.AddSegment(context.Background(), models.AddSegmentParams{
-		Name: segment.Name,
+		Name:        segment.Name,
 		Description: segment.Description,
 	})
 	assert.NoError(t, err)
@@ -83,8 +82,8 @@ func TestDeleteSegment(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	res, err := query.AddSegment(context.Background(), models.AddSegmentParams{
-        Name: segment.Name,
-        Description: segment.Description,
+		Name:        segment.Name,
+		Description: segment.Description,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -98,14 +97,14 @@ func TestAddUserIntoSegment(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	user := models.NewTestUser()
-	_ ,err := query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err := query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment.Name,
-    })
+	})
 	assert.NoError(t, err)
 	addedUser, err := query.AddUser(context.Background(), user.Name)
 	assert.NoError(t, err)
 	res, err := query.AddUserIntoSegment(context.Background(), models.AddUserIntoSegmentParams{
-		UserID: addedUser.ID,
+		UserID:      addedUser.ID,
 		SegmentName: segment.Name,
 	})
 	assert.NoError(t, err)
@@ -117,16 +116,16 @@ func TestAddUserIntoSegmentWithTTLInHours(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	user := models.NewTestUser()
-	_ ,err := query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err := query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment.Name,
-    })
+	})
 	assert.NoError(t, err)
 	addedUser, err := query.AddUser(context.Background(), user.Name)
 	assert.NoError(t, err)
 	timeAfterHour := time.Now().Add(time.Hour)
 	res, err := query.AddUserIntoSegmentWithTTLInHours(context.Background(), models.AddUserIntoSegmentWithTTLInHoursParams{
-		UserID: addedUser.ID,
-		SegmentName: segment.Name,
+		UserID:        addedUser.ID,
+		SegmentName:   segment.Name,
 		NumberOfHours: 1,
 	})
 	assert.NoError(t, err)
@@ -146,25 +145,25 @@ func TestGetSegmentsByUserId(t *testing.T) {
 	segment2 := models.NewTestSegment()
 	segment2.Name = "TestSegment2"
 	user := models.NewTestUser()
-	_ ,err := query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err := query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment1.Name,
-    })
+	})
 	assert.NoError(t, err)
-	_ , err = query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err = query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment2.Name,
-    })
+	})
 	assert.NoError(t, err)
 	addedUser, err := query.AddUser(context.Background(), user.Name)
 	assert.NoError(t, err)
 	segmentForUser1, err := query.AddUserIntoSegmentWithTTLInHours(context.Background(), models.AddUserIntoSegmentWithTTLInHoursParams{
-		UserID: addedUser.ID,
-		SegmentName: segment1.Name,
+		UserID:        addedUser.ID,
+		SegmentName:   segment1.Name,
 		NumberOfHours: 1,
 	})
 	assert.NoError(t, err)
 	segmentForUser2, err := query.AddUserIntoSegmentWithTTLInHours(context.Background(), models.AddUserIntoSegmentWithTTLInHoursParams{
-		UserID: addedUser.ID,
-		SegmentName: segment2.Name,
+		UserID:        addedUser.ID,
+		SegmentName:   segment2.Name,
 		NumberOfHours: 1,
 	})
 	assert.NoError(t, err)
@@ -180,21 +179,21 @@ func TestRemoveUserFromSegment(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	user := models.NewTestUser()
-	_ ,err := query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err := query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment.Name,
-    })
+	})
 	assert.NoError(t, err)
 	addedUser, err := query.AddUser(context.Background(), user.Name)
 	assert.NoError(t, err)
 	addRec, err := query.AddUserIntoSegment(context.Background(), models.AddUserIntoSegmentParams{
-		UserID: addedUser.ID,
+		UserID:      addedUser.ID,
 		SegmentName: segment.Name,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, addedUser.ID, addRec.UserID)
 	assert.Equal(t, segment.Name, addRec.SegmentName)
 	err = query.RemoveUserFromSegment(context.Background(), models.RemoveUserFromSegmentParams{
-		UserID: addedUser.ID,
+		UserID:      addedUser.ID,
 		SegmentName: segment.Name,
 	})
 	assert.NoError(t, err)
@@ -206,29 +205,29 @@ func TestGetSegmentsHistoryByUserId(t *testing.T) {
 	query := database.TestDB(t, databaseURL)
 	segment := models.NewTestSegment()
 	user := models.NewTestUser()
-	_ ,err := query.AddSegment(context.Background(), models.AddSegmentParams{
+	_, err := query.AddSegment(context.Background(), models.AddSegmentParams{
 		Name: segment.Name,
-    })
+	})
 	assert.NoError(t, err)
 	addedUser, err := query.AddUser(context.Background(), user.Name)
 	assert.NoError(t, err)
 	addRec, err := query.AddUserIntoSegment(context.Background(), models.AddUserIntoSegmentParams{
-		UserID: addedUser.ID,
+		UserID:      addedUser.ID,
 		SegmentName: segment.Name,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, addedUser.ID, addRec.UserID)
 	assert.Equal(t, segment.Name, addRec.SegmentName)
 	err = query.RemoveUserFromSegment(context.Background(), models.RemoveUserFromSegmentParams{
-		UserID: addedUser.ID,
+		UserID:      addedUser.ID,
 		SegmentName: segment.Name,
 	})
 	assert.NoError(t, err)
 	res, err := query.GetSegmentsHistoryByUserId(context.Background(), models.GetSegmentsHistoryByUserIdParams{
-		UserID: addRec.UserID,
+		UserID:   addRec.UserID,
 		FromDate: time.Now().Add(-time.Hour),
-		ToDate: time.Now().Add(time.Hour),
-	}) 
+		ToDate:   time.Now().Add(time.Hour),
+	})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
 	assert.Equal(t, segment.Name, res[0].SegmentName)

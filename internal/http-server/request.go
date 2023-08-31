@@ -42,9 +42,9 @@ func GetTimeFromParams(w http.ResponseWriter, r *http.Request, log *slog.Logger,
 }
 
 func DecodeRequsetBody[t any](w http.ResponseWriter, r *http.Request, req t, log *slog.Logger) (t, error) {
-	decoder := json.NewDecoder(r.Body) 
+	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&req)
-	if err!= nil {
+	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err), log)
 		return req, err
 	}

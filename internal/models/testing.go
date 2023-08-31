@@ -11,10 +11,10 @@ func NewTestUser() *User {
 
 func NewTestSegment() *Segment {
 	return &Segment{
-		Name:        "TestSegment",
+		Name: "TestSegment",
 		Description: sql.NullString{
 			String: "Test Description",
-			Valid: true,
+			Valid:  true,
 		},
 	}
 }

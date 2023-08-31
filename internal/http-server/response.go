@@ -11,14 +11,14 @@ import (
 )
 
 func RespondWithError(w http.ResponseWriter, code int, msg string, log *slog.Logger) {
-	if code > 499 { 
+	if code > 499 {
 		log.Error("Responding with 5XX error:", msg)
 	}
 
 	log.Error(msg)
 
 	type errResponse struct {
-		Error string `json:"error"`	
+		Error string `json:"error"`
 	}
 
 	RespondWithJSON(w, code, log, errResponse{
@@ -43,7 +43,7 @@ func RespondWithCSV(w http.ResponseWriter, code int, log *slog.Logger, payload [
 	w.Header().Set("Content-Disposition", "attachment;filename=report.csv")
 
 	writer := csv.NewWriter(w)
-	if err := writer.WriteAll(payload); err!= nil {
+	if err := writer.WriteAll(payload); err != nil {
 		log.Error("Failed to write CSV response: %v", payload)
 	}
 }

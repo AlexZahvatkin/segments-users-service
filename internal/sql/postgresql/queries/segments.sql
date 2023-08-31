@@ -1,13 +1,11 @@
 -- name: AddSegment :one
-INSERT INTO segments (name, created_at, updated_at, description) 
+INSERT INTO segments (name, created_at, updated_at, description)
 VALUES ($1, now(), now(), $2)
 RETURNING *;
-
 -- name: DeleteSegment :exec
-DELETE FROM segments 
+DELETE FROM segments
 WHERE name = $1;
-
 -- name: GetSegmentByName :one
 SELECT *
-FROM segments 
+FROM segments
 WHERE name = $1;

@@ -56,7 +56,7 @@ type responseSegmentAndUsers struct {
 
 // @Summary Adds a segment
 // @Description Adds a segment. If percent is provided, automatically assign that percentage of users to the segment.
-// @Tags Segments 
+// @Tags Segments
 // @Accept  json
 // @Produce  json
 // @ID add-segment
@@ -143,7 +143,7 @@ func AddSegmentHandler(log *slog.Logger, segmentAdder SegmentAutoAssigner) http.
 
 // @Summary Delete a segment
 // @Description Delete a segment using its name.
-// @Tags Segments 
+// @Tags Segments
 // @Accept  json
 // @Produce  json
 // @ID delete-segment

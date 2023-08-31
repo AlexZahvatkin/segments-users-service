@@ -21,14 +21,14 @@ func InitRouters(storage storage.Storage, log *slog.Logger, cfg *config.Config) 
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"https://*, http://*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"*"},
-		ExposedHeaders: []string{"Link"},
+		AllowedOrigins:   []string{"https://*, http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
-		MaxAge: 300,
+		MaxAge:           300,
 	}))
-	
+
 	v1Router := chi.NewRouter()
 
 	v1Router.Use(middleware.RequestID)
@@ -47,9 +47,8 @@ func InitRouters(storage storage.Storage, log *slog.Logger, cfg *config.Config) 
 	v1Router.Delete("/segments", segments.DeleteSegmentHandler(log, storage))
 
 	router.Mount("/v1", v1Router)
- 
 
-	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.HTTPServer.Host + ":" + cfg.HTTPServer.Port))))
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.HTTPServer.Host+":"+cfg.HTTPServer.Port))))
 
 	return router
 }
