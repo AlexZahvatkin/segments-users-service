@@ -1,5 +1,5 @@
 # Тестовое задание
-# Dynamic users segmentatuin service
+# Dynamic users segmentation service
 
 ## Getting Sarted
 
